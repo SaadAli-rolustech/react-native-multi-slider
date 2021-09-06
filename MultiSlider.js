@@ -18,10 +18,10 @@ import { createArray, valueToPosition, positionToValue } from './converters';
 export default class MultiSlider extends React.Component {
   static defaultProps = {
     values: [0],
-    onValuesChangeStart: () => {},
-    onValuesChange: values => {},
-    onValuesChangeFinish: values => {},
-    onMarkersPosition: values => {},
+    onValuesChangeStart: () => { },
+    onValuesChange: values => { },
+    onValuesChangeFinish: values => { },
+    onMarkersPosition: values => { },
     step: 1,
     min: 0,
     max: 10,
@@ -88,19 +88,18 @@ export default class MultiSlider extends React.Component {
         tempStepsAs[step?.index] = step;
       }
     });
-
     this.stepsAs = {};
     this.optionsArray.forEach((ops, index) => {
       if (tempStepsAs[index]) {
         var step = tempStepsAs[index];
         this.stepsAs[index] = {
-          stepLabel: step?.stepLabel ? step.stepLabel : ops,
+          stepLabel: step?.stepLabel ? this.timeConversion(step.stepLabel) : this.timeConversion(ops),
           suffix: step?.suffix ? step.suffix : '',
           prefix: step?.prefix ? step.prefix : '',
         };
       } else {
         this.stepsAs[index] = {
-          stepLabel: ops,
+          stepLabel: this.timeConversion(ops),
           suffix: '',
           prefix: '',
         };
@@ -115,11 +114,27 @@ export default class MultiSlider extends React.Component {
       pastTwo: initialValues[1],
       positionOne: initialValues[0],
       positionTwo: initialValues[1],
+      amTime: false,
     };
-
     this.subscribePanResponder();
   }
 
+  timeConversion = (value) => {
+    const timeDigit = parseInt(value);
+    if (timeDigit === 0 || timeDigit <= 0) {
+      this.setState = { ...this.state, amTime: true }
+      if (timeDigit % 12 == 0)
+        return this.state.amTime ? '12AM' : '12PM'
+    }
+    else {
+      if (timeDigit > 0 && timeDigit < 13)
+        this.setState = { ...this.state, amTime: true }
+      else { this.setState = { ...this.state, amTime: false } }
+      timeDigit = timeDigit % 12;
+      const timeString = timeDigit.toString();
+      return this.state.amTime ? timeString.concat('AM') : timeString.concat('PM');
+    }
+  }
   subscribePanResponder = () => {
     var customPanResponder = (start, move, end) => {
       return PanResponder.create({
@@ -202,8 +217,8 @@ export default class MultiSlider extends React.Component {
       (this.props.allowOverlap
         ? 0
         : this.props.minMarkerOverlapDistance > 0
-        ? this.props.minMarkerOverlapDistance
-        : (this.props.minMarkerOverlapStepDistance || 1) * this.stepLength);
+          ? this.props.minMarkerOverlapDistance
+          : (this.props.minMarkerOverlapStepDistance || 1) * this.stepLength);
     var top =
       trueTop === 0
         ? 0
@@ -274,8 +289,8 @@ export default class MultiSlider extends React.Component {
       (this.props.allowOverlap
         ? 0
         : this.props.minMarkerOverlapDistance > 0
-        ? this.props.minMarkerOverlapDistance
-        : (this.props.minMarkerOverlapStepDistance || 1) * this.stepLength);
+          ? this.props.minMarkerOverlapDistance
+          : (this.props.minMarkerOverlapStepDistance || 1) * this.stepLength);
     var top = this.props.sliderLength - this.props.markerSize / 2;
     var confined =
       unconfined < bottom ? bottom : unconfined > top ? top : unconfined;
